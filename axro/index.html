@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        header {
+            background-color: #1a202c;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        nav {
+            display: flex;
+            justify-content: flex-end;
+            background-color: #1a202c;
+            padding: 10px 20px;
+        }
+        nav a {
+            color: white;
+            margin: 0 15px;
+            text-decoration: none;
+        }
+        .hero {
+            background-color: #2d3748;
+            color: white;
+            text-align: center;
+            padding: 50px 20px;
+        }
+        .hero h1 {
+            font-size: 2.5em;
+        }
+        .hero-buttons {
+            margin-top: 20px;
+        }
+        .hero-buttons a {
+            background-color: #e53e3e;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            margin: 0 10px;
+            border-radius: 5px;
+        }
+        .features, .products {
+            background-color: white;
+            padding: 50px 20px;
+            text-align: center;
+        }
+        .features h2, .products h2 {
+            margin-bottom: 20px;
+        }
+        .feature-item, .product-item {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 10px;
+            display: inline-block;
+            width: calc(33% - 40px);
+            box-sizing: border-box;
+        }
+        .feature-item h3, .product-item h3 {
+            margin-top: 0;
+        }
+        .footer {
+            background-color: #1a202c;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+        .footer a {
+            color: white;
+            margin: 0 10px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <img src="logo.png" alt="Logo" style="height: 50px;">
+    </div>
+</header>
+
+<nav>
+    <a href="#home">Home</a>
+    <a href="#products">Products</a>
+    <a href="#contact">Contact</a>
+</nav>
+
+<section class="hero">
+    <h1>Building Great Digital Experiences.</h1>
+    <p>We create amazing experiences for everyone to enjoy.</p>
+    <div class="hero-buttons">
+        <a href="#learn-more">Learn More</a>
+        <a href="#contact-us">Contact Us</a>
+    </div>
+</section>
+
+<section class="features">
+    <h2>Bringing amazing experiences right into Rec Room.</h2>
+    <div class="feature-item">
+        <h3>Feature 1</h3>
+        <p>Feature 1 description.</p>
+    </div>
+    <div class="feature-item">
+        <h3>Feature 2</h3>
+        <p>Feature 2 description.</p>
+    </div>
+    <div class="feature-item">
+        <h3>Feature 3</h3>
+        <p>Feature 3 description.</p>
+    </div>
+</section>
+
+<section class="products">
+    <h2>For creators, by creators</h2>
+    <div class="product-item">
+        <h3>Strata 1</h3>
+        <p>Discontinued</p>
+        <a href="#">Read more</a>
+    </div>
+    <div class="product-item">
+        <h3>Strata 2</h3>
+        <p>Open Source</p>
+        <a href="#">Get Strata 2</a>
+    </div>
+    <div class="product-item">
+        <h3>Echo Ridge</h3>
+        <p>Unavailable</p>
+        <a href="#">Request access</a>
+    </div>
+</section>
+
+<footer class="footer">
+    <p>&copy; 2024 Product Website. All rights reserved.</p>
+    <a href="#home">Home</a>
+    <a href="#privacy">Privacy Policy</a>
+    <a href="#terms">Terms of Service</a>
+</footer>
+
+</body>
+</html>
