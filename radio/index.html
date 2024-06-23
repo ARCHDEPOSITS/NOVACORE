@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hydro Radio</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        #container {
+            position: relative;
+            text-align: center;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #song-name {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            margin: 0;
+            font-weight: 300; /* Thin text */
+            color: #000000; /* Black color */
+        }
+
+        #audio-player {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1 id="song-name">Loading song...</h1>
+        <audio id="audio-player" controls>
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Array of song objects
+            const songs = [
+                { name: '01 - WCCK JINGLE', url: 'https://github.com/ARCHDEPOSITS/NOVACORE/blob/main/radio/wcck_jingle_-01%20(1).wav' },
+                { name: '02 - WCCK JINGLE', url: 'https://github.com/ARCHDEPOSITS/NOVACORE/blob/main/radio/wcck_jingle_-02 (1).wav' },
+                { name: '03 - WCCK JINGLE', url: 'https://github.com/ARCHDEPOSITS/NOVACORE/blob/main/radio/wcck_jingle_-03.ogg' },
+                { name: '04 - WCCK JINGLE', url: 'https://github.com/ARCHDEPOSITS/NOVACORE/blob/main/radio/wcck_jingle_-04%20(1).wav' },
+                { name: 'ERR - INTERMISSION', url: 'https://github.com/ARCHDEPOSITS/NOVACORE/blob/main/radio/Jimmy_broadcast%20(1).mp3' }
+            ];
+
+            let currentSongIndex = 0;
+
+            // Get the audio player element
+            const audioPlayer = document.getElementById('audio-player');
+            // Get the song name element
+            const songNameElement = document.getElementById('song-name');
+
+            // Function to play the current song
+            function playCurrentSong() {
+                const currentSong = songs[currentSongIndex];
+                audioPlayer.src = currentSong.url;
+                songNameElement.textContent = currentSong.name;
+                audioPlayer.play();
+            }
+
+            // Event listener for when the current song ends
+            audioPlayer.addEventListener('ended', function () {
+                currentSongIndex = (currentSongIndex + 1) % songs.length;
+                playCurrentSong();
+            });
+
+            // Start playing the first song
+            playCurrentSong();
+        });
+    </script>
+</body>
+</html>
