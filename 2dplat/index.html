@@ -80,7 +80,7 @@
 
         let gameState = {
             levelsUnlocked: [1],
-            currency: 0,
+            currency: 100,
             ipAddress: ''
         };
 
@@ -159,6 +159,10 @@
             for (let platform of platforms) {
                 ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
             }
+
+            // Draw shop interactable
+            ctx.fillStyle = 'purple';
+            ctx.fillRect(50, canvas.height - 120, 100, 100);
         }
 
         function gameLoop() {
