@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D Platformer with Save/Load</title>
+    <title>2D Platformer with Save/Load, Random Levels, and Shop</title>
     <style>
         body {
             margin: 0;
@@ -13,7 +13,7 @@
         canvas {
             display: block;
         }
-        #menu {
+        #menu, #mainMenu, #shop {
             position: absolute;
             top: 10px;
             left: 10px;
@@ -21,30 +21,43 @@
             padding: 10px;
             border-radius: 5px;
             color: white;
-        }
-        #menu input[type="file"] {
             display: none;
         }
-        #menu label {
+        #menu input[type="file"], #shop input[type="button"] {
+            display: none;
+        }
+        #menu label, #mainMenu button, #shop button {
             display: inline-block;
             padding: 5px 10px;
             background: #333;
             border-radius: 5px;
             cursor: pointer;
+            margin: 5px 0;
         }
     </style>
 </head>
 <body>
-    <div id="menu">
-        <label for="loadFile">Load</label>
+    <div id="mainMenu">
+        <button onclick="startGame()">Start Game</button>
+        <label for="loadFile">Load Game</label>
         <input type="file" id="loadFile">
-        <button onclick="saveGame()">Save</button>
+    </div>
+    <div id="menu">
+        <button onclick="saveGame()">Save Game</button>
+        <button onclick="openShop()">Shop</button>
+    </div>
+    <div id="shop">
+        <button onclick="buyItem('Double Jump')">Buy Double Jump (100)</button>
+        <button onclick="closeShop()">Close</button>
     </div>
     <canvas id="gameCanvas"></canvas>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const loadFileInput = document.getElementById('loadFile');
+        const mainMenu = document.getElementById('mainMenu');
+        const menu = document.getElementById('menu');
+        const shop = document.getElementById('shop');
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -59,8 +72,11 @@
             dy: 0,
             speed: 5,
             jumpForce: 10,
-            grounded: false
+            grounded: false,
+            doubleJump: false,
+            jumps: 1
         };
+        const playerStart = { x: 50, y: 50 };
 
         let gameState = {
             levelsUnlocked: [1],
@@ -78,11 +94,19 @@
             keys[e.code] = false;
         });
 
-        let platforms = [
-            { x: 0, y: canvas.height - 50, width: canvas.width, height: 50 },
-            { x: 200, y: canvas.height - 150, width: 100, height: 20 },
-            { x: 400, y: canvas.height - 250, width: 100, height: 20 },
-        ];
+        let platforms = [];
+        const platformWidth = 100;
+        const platformHeight = 20;
+        const platformGap = 200;
+
+        function generateRandomLevel() {
+            platforms = [];
+            for (let i = 0; i < 10; i++) {
+                let x = Math.random() * (canvas.width - platformWidth);
+                let y = i * platformGap + 150;
+                platforms.push({ x, y, width: platformWidth, height: platformHeight });
+            }
+        }
 
         function update() {
             if (keys['ArrowRight']) {
@@ -93,9 +117,10 @@
                 player.dx = 0;
             }
 
-            if (keys['Space'] && player.grounded) {
+            if (keys['Space'] && (player.grounded || (player.jumps < 2 && player.doubleJump))) {
                 player.dy = -player.jumpForce;
                 player.grounded = false;
+                player.jumps++;
             }
 
             player.dy += gravity;
@@ -112,13 +137,15 @@
                     player.dy = 0;
                     player.y = platform.y - player.height;
                     player.grounded = true;
+                    player.jumps = 0;
                 }
             }
 
-            if (player.y + player.height > canvas.height) {
-                player.y = canvas.height - player.height;
+            if (player.y > canvas.height) {
+                player.x = playerStart.x;
+                player.y = playerStart.y;
                 player.dy = 0;
-                player.grounded = true;
+                player.jumps = 0;
             }
         }
 
@@ -135,9 +162,11 @@
         }
 
         function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
+            if (!mainMenu.style.display) {
+                update();
+                draw();
+                requestAnimationFrame(gameLoop);
+            }
         }
 
         async function getIpAddress() {
@@ -190,8 +219,36 @@
             }
         });
 
+        function startGame() {
+            mainMenu.style.display = 'none';
+            menu.style.display = 'block';
+            generateRandomLevel();
+            gameLoop();
+        }
+
+        function openShop() {
+            menu.style.display = 'none';
+            shop.style.display = 'block';
+        }
+
+        function closeShop() {
+            shop.style.display = 'none';
+            menu.style.display = 'block';
+        }
+
+        function buyItem(item) {
+            if (item === 'Double Jump' && gameState.currency >= 100) {
+                gameState.currency -= 100;
+                player.doubleJump = true;
+                alert('Double Jump purchased!');
+            } else {
+                alert('Not enough currency or invalid item.');
+            }
+            closeShop();
+        }
+
         getIpAddress();
-        gameLoop();
+        mainMenu.style.display = 'block';
     </script>
 </body>
 </html>
