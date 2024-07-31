@@ -62,6 +62,7 @@
         const ctx = canvas.getContext('2d');
 
         let player = {
+            id: 'player-' + Math.random().toString(36).substr(2, 9),
             x: 100,
             y: 500,
             width: 50,
@@ -77,21 +78,17 @@
         let dx = 0;
         const speed = 5;
 
-        // Player ID and IP
-        let playerId = null;
-        const playerIP = 'your.ip.address.here';  // Change this to your IP
+        // WebSocket connection
+        const socket = new WebSocket('ws://localhost:8080');
 
-        // Load player data
-        fetch('data/players.json')
-            .then(response => response.json())
-            .then(data => {
-                const playerData = data.players.find(p => p.ip === playerIP);
-                if (playerData) {
-                    playerId = playerData.id;
-                    player.text = playerData.text;
-                }
-            })
-            .catch(error => console.error('Error loading player data:', error));
+        let players = {};
+
+        socket.onmessage = event => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'update') {
+                players = data.players;
+            }
+        };
 
         // Handle player movement
         document.addEventListener('keydown', (e) => {
@@ -141,19 +138,27 @@
             } else if (player.x + player.width > canvas.width) {
                 player.x = canvas.width - player.width;
             }
+
+            socket.send(JSON.stringify({
+                type: 'move',
+                id: player.id,
+                x: player.x,
+                y: player.y
+            }));
         }
 
         // Draw the game
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            ctx.fillStyle = player.color;
-            ctx.fillRect(player.x, player.y, player.width, player.height);
-
-            ctx.fillStyle = player.textColor;
-            ctx.font = '20px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(player.text, player.x + player.width / 2, player.y - 10);
+            Object.values(players).forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, player.width, player.height);
+                ctx.fillStyle = p.textColor;
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(p.text, p.x + player.width / 2, p.y - 10);
+            });
         }
 
         // Game loop
@@ -167,6 +172,15 @@
         function startGame() {
             menu.style.display = 'none';
             canvas.style.display = 'block';
+
+            socket.send(JSON.stringify({
+                type: 'join',
+                id: player.id,
+                x: player.x,
+                y: player.y,
+                text: player.text
+            }));
+
             gameLoop();
         }
 
