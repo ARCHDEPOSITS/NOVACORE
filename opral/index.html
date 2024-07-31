@@ -8,10 +8,21 @@
             margin: 0;
             overflow: hidden;
             background-color: #87CEEB;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        #menu {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         #gameCanvas {
-            display: block;
+            display: none;
             background-color: #000;
         }
 
@@ -30,12 +41,23 @@
             right: 0;
             text-align: center;
         }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
+    <div id="menu">
+        <h1>2D Platformer Game</h1>
+        <button id="createGame">Create Game</button>
+        <button id="joinGame">Join Game</button>
+    </div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     <script>
-        // Game variables
+        const menu = document.getElementById('menu');
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
@@ -52,6 +74,8 @@
         const gravity = 0.5;
         let dy = 0;
         let isJumping = false;
+        let dx = 0;
+        const speed = 5;
 
         // Player ID and IP
         let playerId = null;
@@ -71,9 +95,33 @@
 
         // Handle player movement
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'ArrowUp' && !isJumping) {
-                dy = -10;
-                isJumping = true;
+            switch (e.code) {
+                case 'ArrowUp':
+                case 'KeyW':
+                    if (!isJumping) {
+                        dy = -10;
+                        isJumping = true;
+                    }
+                    break;
+                case 'ArrowLeft':
+                case 'KeyA':
+                    dx = -speed;
+                    break;
+                case 'ArrowRight':
+                case 'KeyD':
+                    dx = speed;
+                    break;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            switch (e.code) {
+                case 'ArrowLeft':
+                case 'KeyA':
+                case 'ArrowRight':
+                case 'KeyD':
+                    dx = 0;
+                    break;
             }
         });
 
@@ -81,10 +129,17 @@
         function update() {
             dy += gravity;
             player.y += dy;
+            player.x += dx;
 
             if (player.y + player.height >= canvas.height) {
                 player.y = canvas.height - player.height;
                 isJumping = false;
+            }
+
+            if (player.x < 0) {
+                player.x = 0;
+            } else if (player.x + player.width > canvas.width) {
+                player.x = canvas.width - player.width;
             }
         }
 
@@ -109,7 +164,14 @@
         }
 
         // Start the game loop
-        gameLoop();
+        function startGame() {
+            menu.style.display = 'none';
+            canvas.style.display = 'block';
+            gameLoop();
+        }
+
+        document.getElementById('createGame').addEventListener('click', startGame);
+        document.getElementById('joinGame').addEventListener('click', startGame);
     </script>
 </body>
 </html>
