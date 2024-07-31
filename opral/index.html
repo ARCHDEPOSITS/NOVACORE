@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>2D Platformer Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #87CEEB;
+        }
+
+        #gameCanvas {
+            display: block;
+            background-color: #000;
+        }
+
+        .player {
+            width: 50px;
+            height: 50px;
+            background-color: red;
+            position: absolute;
+        }
+
+        .player-text {
+            color: white;
+            position: absolute;
+            top: -20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script>
+        // Game variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let player = {
+            x: 100,
+            y: 500,
+            width: 50,
+            height: 50,
+            color: 'red',
+            text: 'Player',
+            textColor: 'white',
+        };
+
+        const gravity = 0.5;
+        let dy = 0;
+        let isJumping = false;
+
+        // Player ID and IP
+        let playerId = null;
+        const playerIP = 'your.ip.address.here';  // Change this to your IP
+
+        // Load player data
+        fetch('data/players.json')
+            .then(response => response.json())
+            .then(data => {
+                const playerData = data.players.find(p => p.ip === playerIP);
+                if (playerData) {
+                    playerId = playerData.id;
+                    player.text = playerData.text;
+                }
+            })
+            .catch(error => console.error('Error loading player data:', error));
+
+        // Handle player movement
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'ArrowUp' && !isJumping) {
+                dy = -10;
+                isJumping = true;
+            }
+        });
+
+        // Update game state
+        function update() {
+            dy += gravity;
+            player.y += dy;
+
+            if (player.y + player.height >= canvas.height) {
+                player.y = canvas.height - player.height;
+                isJumping = false;
+            }
+        }
+
+        // Draw the game
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+
+            ctx.fillStyle = player.textColor;
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(player.text, player.x + player.width / 2, player.y - 10);
+        }
+
+        // Game loop
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the game loop
+        gameLoop();
+    </script>
+</body>
+</html>
