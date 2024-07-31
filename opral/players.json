@@ -2,7 +2,7 @@
     "players": [
         {
             "id": "owner",
-            "ip": "",
+            "ip": "149.167.43.71",
             "text": "OWNER"
         }
     ]
