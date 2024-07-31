@@ -1,0 +1,9 @@
+{
+    "players": [
+        {
+            "id": "owner",
+            "ip": "",
+            "text": "OWNER"
+        }
+    ]
+}
