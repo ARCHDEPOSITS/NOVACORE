@@ -2,190 +2,88 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>2D Platformer Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Platformer Multiplayer</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #87CEEB;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            font-family: Arial, sans-serif;
-        }
-
-        #menu {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #gameCanvas {
-            display: none;
-            background-color: #000;
-        }
-
-        .player {
-            width: 50px;
-            height: 50px;
-            background-color: red;
-            position: absolute;
-        }
-
-        .player-text {
-            color: white;
-            position: absolute;
-            top: -20px;
-            left: 0;
-            right: 0;
-            text-align: center;
-        }
-
-        button {
-            padding: 10px 20px;
-            margin: 10px;
-            font-size: 16px;
-        }
+        body { margin: 0; overflow: hidden; }
+        canvas { background: #000; display: block; }
+        #menu { position: absolute; top: 10px; left: 10px; z-index: 10; }
+        #menu button { display: block; margin-bottom: 10px; }
     </style>
 </head>
 <body>
     <div id="menu">
-        <h1>2D Platformer Game</h1>
-        <button id="createGame">Create Game</button>
-        <button id="joinGame">Join Game</button>
+        <button onclick="createGame()">Create Game</button>
+        <button onclick="joinGame()">Join Game</button>
+        <input type="text" id="gameCode" placeholder="Game Code">
+        <button onclick="startGame()">Start Game</button>
     </div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <canvas id="gameCanvas"></canvas>
+
     <script>
-        const menu = document.getElementById('menu');
         const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+        const context = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-        let player = {
-            id: 'player-' + Math.random().toString(36).substr(2, 9),
-            x: 100,
-            y: 500,
-            width: 50,
-            height: 50,
-            color: 'red',
-            text: 'Player',
-            textColor: 'white',
-        };
-
-        const gravity = 0.5;
-        let dy = 0;
-        let isJumping = false;
-        let dx = 0;
-        const speed = 5;
-
-        // WebSocket connection
-        const socket = new WebSocket('ws://localhost:8080');
+        const ws = new WebSocket('wss://your-websocket-server.herokuapp.com/');
 
         let players = {};
+        let playerId;
+        let gameStarted = false;
 
-        socket.onmessage = event => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'update') {
+        ws.onopen = () => {
+            console.log('Connected to WebSocket server');
+        };
+
+        ws.onmessage = (message) => {
+            const data = JSON.parse(message.data);
+            if (data.type === 'init') {
+                playerId = data.playerId;
+            } else if (data.type === 'update') {
                 players = data.players;
             }
         };
 
-        // Handle player movement
-        document.addEventListener('keydown', (e) => {
-            switch (e.code) {
-                case 'ArrowUp':
-                case 'KeyW':
-                    if (!isJumping) {
-                        dy = -10;
-                        isJumping = true;
-                    }
-                    break;
-                case 'ArrowLeft':
-                case 'KeyA':
-                    dx = -speed;
-                    break;
-                case 'ArrowRight':
-                case 'KeyD':
-                    dx = speed;
-                    break;
+        function createGame() {
+            const gameCode = prompt('Enter game code to create:');
+            if (gameCode) {
+                ws.send(JSON.stringify({ type: 'create', gameCode }));
             }
-        });
-
-        document.addEventListener('keyup', (e) => {
-            switch (e.code) {
-                case 'ArrowLeft':
-                case 'KeyA':
-                case 'ArrowRight':
-                case 'KeyD':
-                    dx = 0;
-                    break;
-            }
-        });
-
-        // Update game state
-        function update() {
-            dy += gravity;
-            player.y += dy;
-            player.x += dx;
-
-            if (player.y + player.height >= canvas.height) {
-                player.y = canvas.height - player.height;
-                isJumping = false;
-            }
-
-            if (player.x < 0) {
-                player.x = 0;
-            } else if (player.x + player.width > canvas.width) {
-                player.x = canvas.width - player.width;
-            }
-
-            socket.send(JSON.stringify({
-                type: 'move',
-                id: player.id,
-                x: player.x,
-                y: player.y
-            }));
         }
 
-        // Draw the game
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            Object.values(players).forEach(p => {
-                ctx.fillStyle = p.color;
-                ctx.fillRect(p.x, p.y, player.width, player.height);
-                ctx.fillStyle = p.textColor;
-                ctx.font = '20px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(p.text, p.x + player.width / 2, p.y - 10);
-            });
+        function joinGame() {
+            const gameCode = document.getElementById('gameCode').value;
+            if (gameCode) {
+                ws.send(JSON.stringify({ type: 'join', gameCode }));
+            }
         }
 
-        // Game loop
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-
-        // Start the game loop
         function startGame() {
-            menu.style.display = 'none';
-            canvas.style.display = 'block';
-
-            socket.send(JSON.stringify({
-                type: 'join',
-                id: player.id,
-                x: player.x,
-                y: player.y,
-                text: player.text
-            }));
-
-            gameLoop();
+            gameStarted = true;
+            document.getElementById('menu').style.display = 'none';
+            animate();
         }
 
-        document.getElementById('createGame').addEventListener('click', startGame);
-        document.getElementById('joinGame').addEventListener('click', startGame);
+        function animate() {
+            if (!gameStarted) return;
+
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let id in players) {
+                const player = players[id];
+                context.fillStyle = player.color;
+                context.fillRect(player.x, player.y, 50, 50);
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (!playerId || !gameStarted) return;
+            const direction = e.key.replace('Arrow', '').toLowerCase();
+            ws.send(JSON.stringify({ type: 'move', playerId, direction }));
+        });
     </script>
 </body>
 </html>
