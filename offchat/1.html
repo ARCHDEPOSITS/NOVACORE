@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Static Chat App</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            max-width: 600px;
+            margin: auto;
+        }
+        .message-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+        }
+        .message {
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background: #eee;
+        }
+        .message.sent {
+            background: #007bff;
+            color: #fff;
+            align-self: flex-end;
+        }
+        .message.received {
+            background: #f1f1f1;
+            color: #000;
+            align-self: flex-start;
+        }
+        .message-input {
+            display: flex;
+            border-top: 1px solid #ddd;
+            background: #fff;
+        }
+        .message-input input {
+            flex-grow: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+        .message-input button {
+            padding: 10px 20px;
+            border: none;
+            background: #007bff;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .message-input button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="message-area" id="message-area">
+            <!-- Messages will be displayed here -->
+        </div>
+        <div class="message-input">
+            <input type="text" id="message-input" placeholder="Type a message">
+            <button id="send-message">Send</button>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const messageArea = document.getElementById('message-area');
+            const messageInput = document.getElementById('message-input');
+            const sendMessageButton = document.getElementById('send-message');
+
+            function loadMessages() {
+                const messages = JSON.parse(localStorage.getItem('messages')) || [];
+                messages.forEach(message => {
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('message', message.type);
+                    messageElement.textContent = message.text;
+                    messageArea.appendChild(messageElement);
+                });
+            }
+
+            function saveMessage(text, type) {
+                const messages = JSON.parse(localStorage.getItem('messages')) || [];
+                messages.push({ text, type });
+                localStorage.setItem('messages', JSON.stringify(messages));
+            }
+
+            sendMessageButton.addEventListener('click', () => {
+                const messageText = messageInput.value.trim();
+                if (messageText) {
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('message', 'sent');
+                    messageElement.textContent = messageText;
+                    messageArea.appendChild(messageElement);
+                    saveMessage(messageText, 'sent');
+                    messageInput.value = '';
+
+                    // Simulate received message
+                    setTimeout(() => {
+                        const receivedMessageElement = document.createElement('div');
+                        receivedMessageElement.classList.add('message', 'received');
+                        receivedMessageElement.textContent = `Reply to: ${messageText}`;
+                        messageArea.appendChild(receivedMessageElement);
+                        saveMessage(`Reply to: ${messageText}`, 'received');
+                    }, 1000);
+                }
+            });
+
+            loadMessages();
+        });
+    </script>
+</body>
+</html>
