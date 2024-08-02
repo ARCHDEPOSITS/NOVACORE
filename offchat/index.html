@@ -134,6 +134,34 @@
         .message-input button:hover {
             background-color: #0056b3;
         }
+
+        .add-friend {
+            display: flex;
+            padding: 10px;
+            background-color: #fff;
+            border-top: 1px solid #ccc;
+        }
+
+        .add-friend input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .add-friend button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .add-friend button:hover {
+            background-color: #218838;
+        }
     </style>
 </head>
 <body>
@@ -142,22 +170,15 @@
             <div class="profile">
                 <img src="https://i.pinimg.com/736x/cb/45/72/cb4572f19ab7505d552206ed5dfb3739.jpg" alt="Profile Picture" class="profile-picture">
                 <div class="profile-info">
-                    <h3>My Profile</h3>
-                    <p>Friend Code: A-123-456</p>
+                    <h3 id="user-name">My Profile</h3>
+                    <p id="friend-code">Friend Code: A-123-456</p>
                 </div>
             </div>
             <div class="search">
                 <input type="text" placeholder="Search">
             </div>
-            <div class="contacts">
-                <div class="contact">
-                    <img src="https://i.pinimg.com/736x/cb/45/72/cb4572f19ab7505d552206ed5dfb3739.jpg" alt="Contact Picture" class="profile-picture">
-                    <div class="contact-info">
-                        <h4>Contact Name</h4>
-                        <p>Last Message</p>
-                    </div>
-                </div>
-                <!-- Add more contacts as needed -->
+            <div class="contacts" id="contacts">
+                <!-- Contacts will be dynamically added here -->
             </div>
         </div>
         <div class="main-content">
@@ -168,6 +189,10 @@
                 <input type="text" id="message-input" placeholder="Type a message">
                 <button id="send-message">Send</button>
             </div>
+            <div class="add-friend">
+                <input type="text" id="friend-code-input" placeholder="Enter friend code">
+                <button id="add-friend-button">Add Friend</button>
+            </div>
         </div>
     </div>
     <script>
@@ -175,6 +200,22 @@
             const sendMessageButton = document.getElementById('send-message');
             const messageInput = document.getElementById('message-input');
             const messageArea = document.getElementById('message-area');
+            const userNameElement = document.getElementById('user-name');
+            const friendCodeElement = document.getElementById('friend-code');
+            const contactsElement = document.getElementById('contacts');
+            const addFriendButton = document.getElementById('add-friend-button');
+            const friendCodeInput = document.getElementById('friend-code-input');
+
+            let user = loadUser();
+
+            if (!user) {
+                user = createUser();
+                saveUser(user);
+            }
+
+            userNameElement.textContent = user.name;
+            friendCodeElement.textContent = `Friend Code: ${user.friendCode}`;
+            loadContacts();
 
             sendMessageButton.addEventListener('click', () => {
                 const messageText = messageInput.value.trim();
@@ -186,6 +227,68 @@
                     messageInput.value = '';
                 }
             });
+
+            addFriendButton.addEventListener('click', () => {
+                const friendCode = friendCodeInput.value.trim();
+                if (friendCode) {
+                    addFriend(friendCode);
+                    friendCodeInput.value = '';
+                }
+            });
+
+            function createUser() {
+                const name = prompt('Enter your name:');
+                const friendCode = generateFriendCode();
+                return { name, friendCode, friends: [] };
+            }
+
+            function generateFriendCode() {
+                const letter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+                const numbers = Array.from({ length: 6 }, () => Math.floor(Math.random() * 10)).join('');
+                return `${letter}-${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+            }
+
+            function saveUser(user) {
+                localStorage.setItem('user', JSON.stringify(user));
+            }
+
+            function loadUser() {
+                return JSON.parse(localStorage.getItem('user'));
+            }
+
+            function loadContacts() {
+                contactsElement.innerHTML = '';
+                user.friends.forEach(friend => {
+                    const contactElement = document.createElement('div');
+                    contactElement.classList.add('contact');
+                    contactElement.innerHTML = `
+                        <img src="https://i.pinimg.com/736x/cb/45/72/cb4572f19ab7505d552206ed5dfb3739.jpg" alt="Contact Picture" class="profile-picture">
+                        <div class="contact-info">
+                            <h4>${friend.name}</h4>
+                            <p>Friend Code: ${friend.friendCode}</p>
+                        </div>
+                    `;
+                    contactsElement.appendChild(contactElement);
+                });
+            }
+
+            function addFriend(friendCode) {
+                if (friendCode === user.friendCode) {
+                    alert('You cannot add yourself as a friend.');
+                    return;
+                }
+
+                const existingFriend = user.friends.find(friend => friend.friendCode === friendCode);
+                if (existingFriend) {
+                    alert('This friend is already added.');
+                    return;
+                }
+
+                const friendName = prompt('Enter friend\'s name:');
+                user.friends.push({ name: friendName, friendCode });
+                saveUser(user);
+                loadContacts();
+            }
         });
     </script>
 </body>
